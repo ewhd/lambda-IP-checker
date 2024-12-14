@@ -1,0 +1,76 @@
+# gitignore file for .emacs.d
+# Sourced mostly from
+# https://gist.github.com/bmsjarbas/992a61ceb3adb9babb41da9fb84542b0
+
+# -*- mode: gitignore; -*-
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+*.elc
+auto-save-list
+tramp
+.\#*
+/eln-cache/
+/elpaca/
+
+# Org-mode
+.org-id-locations
+*_archive
+
+# flymake-mode
+*_flymake.*
+
+# eshell files
+/eshell/history
+/eshell/lastdir
+
+# elpa packages
+/elpa/
+
+# reftex files
+*.rel
+
+# AUCTeX auto folder
+/auto/
+
+# cask packages
+.cask/
+dist/
+
+# Flycheck
+flycheck_*.el
+
+# server auth directory
+/server/
+
+# projectiles files
+.projectile
+
+# directory configuration
+# .dir-locals.el
+
+# network security
+/network-security.data
+
+# Undo-tree save-files
+*.~undo-tree
+
+# Session-files
+/session*
+
+# Added from magit
+/spell-fu/
+/transient/
+/tree-sitter/
+/history
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
