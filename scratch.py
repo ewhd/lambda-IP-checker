@@ -35,7 +35,7 @@ def main():
     dir_to_search_within = input(
         "Enter a directory to search within: ") or "../test"
 
-    json_data_set = search(dir_to_search_within)
+    # json_data_set = search(dir_to_search_within)
 
     # print(json_data_set)
 
