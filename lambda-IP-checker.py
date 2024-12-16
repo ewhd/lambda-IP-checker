@@ -28,7 +28,7 @@ def main():
     }
     print(filtered_result)
 
-    print(filtered_result['Last Analysis Stats']['malicious'])
+    malicious_score = filtered_result['Last Analysis Stats']['malicious']
 
 if __name__ == "__main__":
     main()
