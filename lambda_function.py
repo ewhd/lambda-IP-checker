@@ -7,9 +7,6 @@ import time
 
 s3 = boto3.client('s3')
 ses = boto3.client('ses')
-
-# client = boto3.client('ses', region_name='us-west-2')
-
 aws_region = "us-west-2"
 
 
@@ -102,17 +99,20 @@ def rate_limited_api_call(
 
 
 def lambda_handler(event, context):
-    """"""
+    """
+    Reads log data, checks if IPs are known unsafe, and sends an email alert if they are.
+    """
 
     all_IPs = []
     malicious_IPs = []
+
     decompressed_data = read_from_s3(event, context)
 
     # Process each line as a separate JSON object
     try:
         for line in decompressed_data.strip().split("\n"):
             log_entry = json.loads(line)
-            # print("IP Address:", log_entry["c-ip"])  # For debugging
+            # print("IP Address:", log_entry["c-ip"])
             all_IPs.append(log_entry["c-ip"])
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
