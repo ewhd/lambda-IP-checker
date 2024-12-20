@@ -118,18 +118,20 @@ def lambda_handler(event, context):
         print(f"Error decoding JSON: {e}")
         raise
 
-    for ip in all_IPs:
-        response = rate_limited_api_call(ip)
-        result = response.json()
-        filtered_result = {
-            "IP": result.get("data", {}).get("id"),
-            "Last Analysis Stats": result.get("data",{}).get("attributes", {}).get("last_analysis_stats"),
-        }
-        malicious_score = filtered_result['Last Analysis Stats']['malicious']
-        if malicious_score > 0:
-            malicious_IPs.append(filtered_result['IP'])
+    ses_send_email_alert(all_IPs, "AWS Traffic Summary")
 
-    for ip in malicious_IPs:
-        print(ip)
+    # for ip in all_IPs:
+    #     response = rate_limited_api_call(ip)
+    #     result = response.json()
+    #     filtered_result = {
+    #         "IP": result.get("data", {}).get("id"),
+    #         "Last Analysis Stats": result.get("data",{}).get("attributes", {}).get("last_analysis_stats"),
+    #     }
+    #     malicious_score = filtered_result['Last Analysis Stats']['malicious']
+    #     if malicious_score > 0:
+    #         malicious_IPs.append(filtered_result['IP'])
+
+    # for ip in malicious_IPs:
+    #     print(ip)
 
     return {"status": "success"}
