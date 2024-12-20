@@ -118,7 +118,11 @@ def lambda_handler(event, context):
         print(f"Error decoding JSON: {e}")
         raise
 
-    ses_send_email_alert(all_IPs, "AWS Traffic Summary")
+    message = ""
+    for ip in all_IPs:
+        message = message + str(ip) + "\n"
+
+    ses_send_email_alert(message, "AWS Traffic Summary")
 
     # for ip in all_IPs:
     #     response = rate_limited_api_call(ip)
