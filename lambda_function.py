@@ -33,8 +33,8 @@ def read_from_s3(event, context):
 
 
 def ses_send_email_alert(
-        message,
         subject,
+        message,
         sender="ewhd22+aws.ses.alerts@gmail.com",
         receiver="ewhd22@gmail.com"
 ):
@@ -63,17 +63,17 @@ def ses_send_email_alert(
 
 
 def rate_limited_api_call(
-        api_call,
+        api_arg,
+        api_url='https://www.virustotal.com/api/v3/ip_addresses/',
+        api_key=os.environ.get('VT_API_KEY'),
         rate_limit=4,  # per minute
         max_retries=3,
-        api_key=os.environ.get('VT_API_KEY'),
-        api_url='https://www.virustotal.com/api/v3/ip_addresses/',
         ):
     """
     Make an API call, respecting the rate limit.
     """
     headers = {"x-apikey": api_key}
-    url = api_url + api_call
+    url = f'{api_url}{api_arg}'
     # current_time = time.time()
     attempt = 0
 
@@ -104,38 +104,46 @@ def lambda_handler(event, context):
     """
 
     all_IPs = []
-    malicious_IPs = []
+    malicicious_IP_data = []
+    formatted_JSON_data_set = []
 
+    # Retrieve data from S3, decompress it, process each line as a
+    # separate JSON object, extract the IP, and add it to a list
     decompressed_data = read_from_s3(event, context)
-
-    # Process each line as a separate JSON object
     try:
         for line in decompressed_data.strip().split("\n"):
             log_entry = json.loads(line)
-            # print("IP Address:", log_entry["c-ip"])
             all_IPs.append(log_entry["c-ip"])
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
         raise
+    all_IPs = set(all_IPs)    # Remove duplicates by converting a set
 
-    message = ""
+    # Query VirusTotal API about the IP, filter the resulting JSON for
+    # the analysis stats, evaluate the "malicious" score and add
+    # malicious IP data to a list
     for ip in all_IPs:
-        message = message + str(ip) + "\n"
+        response = rate_limited_api_call(ip)
+        result = response.json()
+        filtered_data = {
+            "IP": result.get("data", {}).get("id"),
+            "Last Analysis Stats": result.get("data",{}).get("attributes", {}).get("last_analysis_stats"),
+        }
+        malicious_score = filtered_data['Last Analysis Stats']['malicious']
+        if malicious_score > 0:
+            malicicious_IP_data.append(filtered_data)
 
-    ses_send_email_alert(message, "AWS Traffic Summary")
+    # Pretty format the malicious IP JSON data
+    for data in malicicious_IP_data:
+        formatted_data = json.dumps(data, indent=4)
+        formatted_JSON_data_set.append(formatted_data)
 
-    # for ip in all_IPs:
-    #     response = rate_limited_api_call(ip)
-    #     result = response.json()
-    #     filtered_result = {
-    #         "IP": result.get("data", {}).get("id"),
-    #         "Last Analysis Stats": result.get("data",{}).get("attributes", {}).get("last_analysis_stats"),
-    #     }
-    #     malicious_score = filtered_result['Last Analysis Stats']['malicious']
-    #     if malicious_score > 0:
-    #         malicious_IPs.append(filtered_result['IP'])
-
-    # for ip in malicious_IPs:
-    #     print(ip)
+    # Send an email with the prettified JSON as message body
+    email_subject = "Summary of malicious IP contact"
+    email_body = 'The following malicious IPs visited my website:\n\n'
+    for data in formatted_JSON_data_set:
+        email_body = f'{email_body}{data}\n'
+    # print(email_body)
+    ses_send_email_alert(email_subject, email_body)
 
     return {"status": "success"}
