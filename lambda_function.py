@@ -29,7 +29,7 @@ def read_from_s3(event, context):
 
     # Decompress the .gz file
     decompressed_data = gzip.decompress(compressed_data).decode('utf-8')
-
+    print(len(decompressed_data))
     return decompressed_data
 
 
