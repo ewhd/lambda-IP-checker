@@ -4,6 +4,7 @@ import json
 import os
 import requests
 import time
+from datetime import datetime
 
 s3 = boto3.client('s3')
 ses = boto3.client('ses')
@@ -133,17 +134,24 @@ def lambda_handler(event, context):
         if malicious_score > 0:
             malicicious_IP_data.append(filtered_data)
 
-    # Pretty format the malicious IP JSON data
-    for data in malicicious_IP_data:
-        formatted_data = json.dumps(data, indent=4)
-        formatted_JSON_data_set.append(formatted_data)
+    # Form email
+    timestamp = datetime.now()
+    if len(malicicious_IP_data) > 0:
+        # Pretty format the malicious IP JSON data
+        for data in malicicious_IP_data:
+            formatted_data = json.dumps(data, indent=4)
+            formatted_JSON_data_set.append(formatted_data)
 
-    # Send an email with the prettified JSON as message body
-    email_subject = "Summary of malicious IP contact"
-    email_body = 'The following malicious IPs visited my website:\n\n'
-    for data in formatted_JSON_data_set:
-        email_body = f'{email_body}{data}\n'
-    # print(email_body)
+        # Prepare email with the prettified JSON as message body
+        email_subject = "Summary of malicious IP contact"
+        email_body = 'The following malicious IPs recently visited my website:\n\n'
+        for data in formatted_JSON_data_set:
+            email_body = f'{email_body}{data}\n'
+        email_body = f'{email_body}\nReport generated at {timestamp::%Y-%m-%dT%H:%M}'
+    else:
+        email_subject = "No malicious IP contact"
+        email_body = f'No malicious IP contact detected\n\nReport generated at {timestamp::%Y-%m-%dT%H:%M}'
+
     ses_send_email_alert(email_subject, email_body)
 
     return {"status": "success"}
