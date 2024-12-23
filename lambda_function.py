@@ -111,10 +111,12 @@ def lambda_handler(event, context):
     # Retrieve data from S3, decompress it, process each line as a
     # separate JSON object, extract the IP, and add it to a list
     decompressed_data = read_from_s3(event, context)
+    print("Data read from S3")
     try:
         for line in decompressed_data.strip().split("\n"):
             log_entry = json.loads(line)
             all_IPs.append(log_entry["c-ip"])
+        print("IPs extracted from S3 data")
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
         raise
@@ -133,6 +135,7 @@ def lambda_handler(event, context):
         malicious_score = filtered_data['Last Analysis Stats']['malicious']
         if malicious_score > 0:
             malicicious_IP_data.append(filtered_data)
+    print("API calls made")
 
     # Form email
     timestamp = datetime.now()
@@ -153,5 +156,6 @@ def lambda_handler(event, context):
         email_body = f'No malicious IP contact detected\n\nReport generated at {timestamp::%Y-%m-%dT%H:%M}'
 
     ses_send_email_alert(email_subject, email_body)
+    print("Email sent")
 
     return {"status": "success"}
