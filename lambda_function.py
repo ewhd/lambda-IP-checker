@@ -121,11 +121,13 @@ def lambda_handler(event, context):
         print(f"Error decoding JSON: {e}")
         raise
     all_IPs = set(all_IPs)    # Remove duplicates by converting a set
+    print(f'All IPs found: {all_IPs}')
 
     # Query VirusTotal API about the IP, filter the resulting JSON for
     # the analysis stats, evaluate the "malicious" score and add
     # malicious IP data to a list
     for ip in all_IPs:
+        print(f"Attempting API call on {ip}")
         response = rate_limited_api_call(ip)
         result = response.json()
         filtered_data = {
