@@ -134,6 +134,7 @@ def lambda_handler(event, context):
         print(f"Attempting API call on {ip}")
         response = rate_limited_api_call(ip)
         result = response.json()
+        print(f'API result: {result}')
         filtered_data = {
             "IP": result.get("data", {}).get("id"),
             "Last Analysis Stats": result.get("data",{}).get("attributes", {}).get("last_analysis_stats"),
