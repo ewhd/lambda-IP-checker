@@ -29,7 +29,7 @@ def read_from_s3(event, context):
 
     # Decompress the .gz file
     decompressed_data = gzip.decompress(compressed_data).decode('utf-8')
-    print(len(decompressed_data))
+    # print(type(decompressed_data))
     return decompressed_data
 
 
@@ -101,7 +101,8 @@ def rate_limited_api_call(
 
 def lambda_handler(event, context):
     """
-    Reads log data, checks if IPs are known unsafe, and sends an email alert if they are.
+    Reads log data, checks if IPs are known unsafe, and sends an email
+    alert if they are.
     """
 
     all_IPs = []
@@ -115,18 +116,21 @@ def lambda_handler(event, context):
     try:
         for line in decompressed_data.strip().split("\n"):
             log_entry = json.loads(line)
-            all_IPs.append(log_entry["c-ip"])
+            IP = log_entry["c-ip"]
+            print(f"IP extracted from data: {IP}")
+            all_IPs.append(IP)
         print("IPs extracted from S3 data")
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
         raise
-    all_IPs = set(all_IPs)    # Remove duplicates by converting a set
     print(f'All IPs found: {all_IPs}')
+    unique_IPs = set(all_IPs)    # Remove duplicates by converting a set
+    print(f'All IPs found: {unique_IPs}')
 
     # Query VirusTotal API about the IP, filter the resulting JSON for
     # the analysis stats, evaluate the "malicious" score and add
     # malicious IP data to a list
-    for ip in all_IPs:
+    for ip in unique_IPs:
         print(f"Attempting API call on {ip}")
         response = rate_limited_api_call(ip)
         result = response.json()
