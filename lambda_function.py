@@ -101,7 +101,7 @@ def rate_limited_api_call(
             print(f"Unexpected error: {e}")
         finally:
             time.sleep(60 / rate_limit)
-    print('API call failed.')
+    print('API call failed.')  # unnecessary?
     return None
 
 
@@ -139,7 +139,9 @@ def lambda_handler(event, context):
     for ip in unique_IPs:
         print(f"Attempting API call on {ip}")
         response = rate_limited_api_call(ip)
+        print(type(response))
         result = response.json()
+        print(type(result))
         print(f'API result: {result}')
         filtered_data = {
             "IP": result.get("data", {}).get("id"),
