@@ -80,9 +80,10 @@ def rate_limited_api_call(
 
     while attempt < max_retries:
         try:
+            attempt += 1
+            print(f'Making API call attempt {attempt} of {max_retries}')
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
-                time.sleep(60 / rate_limit)
                 return response
             elif response.status_code == 429:
                 print("Rate limit exceeded. Retrying after 60 seconds...")
@@ -97,6 +98,8 @@ def rate_limited_api_call(
             print(f"Request failed: {e}")
         except Exception as e:
             print(f"Unexpected error: {e}")
+        finally:
+            time.sleep(60 / rate_limit)
 
 
 def lambda_handler(event, context):
