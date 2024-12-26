@@ -101,6 +101,8 @@ def rate_limited_api_call(
             print(f"Unexpected error: {e}")
         finally:
             time.sleep(60 / rate_limit)
+    print('API call failed.')
+    return None
 
 
 def lambda_handler(event, context):
