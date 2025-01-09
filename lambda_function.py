@@ -100,8 +100,8 @@ def rate_limited_api_call(
             print(f"Request failed: {e}")
         except Exception as e:
             print(f"Unexpected error: {e}")
-        finally:
-            time.sleep(60 / rate_limit)
+        print("Retrying, pausing to respect rate limit...")
+        time.sleep(60 / rate_limit)
     print('API call failed.')  # unnecessary?
     return None
 
@@ -139,12 +139,15 @@ def lambda_handler(event, context):
     # malicious IP data to a list
     for ip in unique_IPs:
         print(f"Attempting API call on {ip}")
-        response = rate_limited_api_call(ip)
-        print(f'API response status code: {response.status_code}')
-        print(type(response))
-        result = response.json()
-        print(type(result))
-        print(f'API result: {result}')
+        try:
+            response = rate_limited_api_call(ip)
+            print(f'API response status code: {response.status_code}')
+            print(type(response))
+            result = response.json()
+            print(type(result))
+            print(f'API result: {result}')
+        except Exception as e:
+            print(f"Unexpected error: {e}")
         filtered_data = {
             "IP": result.get("data", {}).get("id"),
             "Last Analysis Stats": result.get("data",{}).get("attributes", {}).get("last_analysis_stats"),
