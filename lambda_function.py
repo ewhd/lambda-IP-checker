@@ -85,6 +85,7 @@ def rate_limited_api_call(
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
                 print(f'API call successful! Result: {response.status_code}')
+                print(f'Response value has type {type(response)}')
                 return response
             elif response.status_code == 429:
                 print("Rate limit exceeded. Retrying after 60 seconds...")
