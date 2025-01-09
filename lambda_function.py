@@ -38,7 +38,7 @@ def ses_send_email_alert(
         message,
         sender="ewhd22+aws.ses.alerts@gmail.com",
         receiver="ewhd22@gmail.com"
-):
+        ):
     """
     Sends an alert using AWS Simple Email Service
     """
@@ -68,7 +68,7 @@ def rate_limited_api_call(
         api_url='https://www.virustotal.com/api/v3/ip_addresses/',
         api_key=os.environ.get('VT_API_KEY'),
         rate_limit=4,  # per minute
-        max_retries=2,
+        max_retries=2
         ):
     """
     Make an API call, respecting the rate limit.
