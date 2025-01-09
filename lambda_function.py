@@ -68,7 +68,7 @@ def rate_limited_api_call(
         api_url='https://www.virustotal.com/api/v3/ip_addresses/',
         api_key=os.environ.get('VT_API_KEY'),
         rate_limit=4,  # per minute
-        max_retries=3,
+        max_retries=4,
         ):
     """
     Make an API call, respecting the rate limit.
@@ -84,7 +84,6 @@ def rate_limited_api_call(
             print(f'Making API call attempt {attempt} of {max_retries}')
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
-                print('API call successful! Result: 200')
                 print(f'API call successful! Result: {response.status_code}')
                 return response
             elif response.status_code == 429:
