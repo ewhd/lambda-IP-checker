@@ -85,6 +85,7 @@ def rate_limited_api_call(
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
                 print('API call successful! Result: 200')
+                print(f'API call successful! Result: {response.status_code}')
                 return response
             elif response.status_code == 429:
                 print("Rate limit exceeded. Retrying after 60 seconds...")
@@ -139,6 +140,7 @@ def lambda_handler(event, context):
     for ip in unique_IPs:
         print(f"Attempting API call on {ip}")
         response = rate_limited_api_call(ip)
+        print(f'API response status code: {response.status_code}')
         print(type(response))
         result = response.json()
         print(type(result))
