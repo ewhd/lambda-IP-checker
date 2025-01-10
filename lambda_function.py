@@ -24,13 +24,16 @@ def read_from_s3(event, context):
     key = event['Records'][0]['s3']['object']['key']
 
     # Fetch the object from S3
-    response = s3.get_object(Bucket=bucket, Key=key)
-    compressed_data = response['Body'].read()
-
-    # Decompress the .gz file
-    decompressed_data = gzip.decompress(compressed_data).decode('utf-8')
-    # print(type(decompressed_data))
-    return decompressed_data
+    try:
+        response = s3.get_object(Bucket=bucket, Key=key)
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+    else:
+        compressed_data = response['Body'].read()
+        # Decompress the .gz file
+        decompressed_data = gzip.decompress(compressed_data).decode('utf-8')
+        # print(type(decompressed_data))
+        return decompressed_data
 
 
 def ses_send_email_alert(
@@ -117,9 +120,10 @@ def lambda_handler(event, context):
     formatted_JSON_data_set = []
 
     # Retrieve data from S3, decompress it, process each line as a
-    # separate JSON object, extract the IP, and add it to a list
     decompressed_data = read_from_s3(event, context)
     print("Data read from S3")
+
+    # separate JSON object, extract the IP, and add it to a list
     try:
         for line in decompressed_data.strip().split("\n"):
             log_entry = json.loads(line)
