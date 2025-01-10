@@ -96,16 +96,16 @@ def rate_limited_api_call(
             else:
                 # Log non-200 responses for debugging
                 print(f"Error {response.status_code}: {response.text}")
-                return None
+                # return None
         except requests.exceptions.Timeout:
             print("Request timed out. Retrying...")
         except requests.exceptions.RequestException as e:
             print(f"Request failed: {e}")
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            print(f"Unexpected error while calling API: {e}")
         print("Retrying, pausing to respect rate limit...")
         time.sleep(60 / rate_limit)
-    print('API call failed.')  # unnecessary?
+    print('API call failed.')
     return None
 
 
@@ -145,20 +145,21 @@ def lambda_handler(event, context):
         print(f"Attempting API call on {ip}")
         try:
             response = rate_limited_api_call(ip)
-            print(f'API response status code: {response.status_code}')
-            print(type(response))
-            result = response.json()
-            print(type(result))
-            print(f'API result: {result}')
+            # print(f'API response status code: {response.status_code}')
+            # print(type(response))
         except Exception as e:
-            print(f"Unexpected error: {e}")
-        filtered_data = {
-            "IP": result.get("data", {}).get("id"),
-            "Last Analysis Stats": result.get("data",{}).get("attributes", {}).get("last_analysis_stats"),
-        }
-        malicious_score = filtered_data['Last Analysis Stats']['malicious']
-        if malicious_score > 0:
-            malicicious_IP_data.append(filtered_data)
+            print(f"Unexpected error while calling API call function: {e}")
+        else:
+            result = response.json()
+            # print(type(result))
+            # print(f'API result: {result}')
+            filtered_data = {
+                "IP": result.get("data", {}).get("id"),
+                "Last Analysis Stats": result.get("data",{}).get("attributes", {}).get("last_analysis_stats"),
+            }
+            malicious_score = filtered_data['Last Analysis Stats']['malicious']
+            if malicious_score > 0:
+                malicicious_IP_data.append(filtered_data)
     print("API calls made")
 
     # Form email
